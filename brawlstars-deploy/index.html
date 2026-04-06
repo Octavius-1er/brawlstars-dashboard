@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Brawl Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0618;
+  --bg2: #130d2a;
+  --bg3: #1e1040;
+  --card: #160e30;
+  --border: #3d2070;
+  --accent: #7c3aed;
+  --accent2: #db2777;
+  --gold: #FFD700;
+  --text: #f0e6ff;
+  --text2: #a78bfa;
+  --text3: #6b5fa0;
+  --green: #4ade80;
+  --red: #f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Animated bg */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,#3d1a7022 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,#1a0d3a22 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:'Boogaloo',cursive;font-size:1.4rem;color:var(--gold);letter-spacing:2px}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:600;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+.nav-item:hover{background:var(--bg3);color:var(--text);border-left-color:var(--border)}
+.nav-item.active{background:linear-gradient(90deg,#7c3aed22,transparent);color:#fff;border-left-color:var(--accent)}
+.nav-item .icon{font-size:18px;width:22px;text-align:center}
+.nav-section{padding:12px 16px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+
+.token-section{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
+.token-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.token-input-wrap{position:relative}
+.token-input-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:11px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.token-input-wrap input:focus{border-color:var(--accent)}
+.tok-ok{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);margin-top:5px}
+.tok-no{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);margin-top:5px}
+
+/* Main */
+.main{margin-left:220px;padding:24px;position:relative;z-index:1;min-height:100vh}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.page-title{font-family:'Boogaloo',cursive;font-size:1.8rem;color:var(--gold);margin-bottom:4px;letter-spacing:1px}
+.page-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+
+/* Search bar */
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar input::placeholder{color:var(--text3)}
+.btn{padding:10px 20px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Boogaloo',cursive;font-size:1rem;cursor:pointer;letter-spacing:.5px;transition:opacity .2s,transform .1s;white-space:nowrap}
+.btn:hover{opacity:.85}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1.5px solid var(--accent);color:var(--text2)}
+.btn-outline:hover{background:var(--bg3);opacity:1}
+.btn-sm{padding:6px 14px;font-size:.85rem;font-family:'Nunito',sans-serif;font-weight:700}
+.btn-danger{background:#7f1d1d;color:#fca5a5}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+.card-title{font-family:'Boogaloo',cursive;font-size:1.05rem;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-subtitle{font-size:11px;color:var(--text3);font-weight:400;margin-left:auto}
+
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.stat-box{background:var(--bg3);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-family:'Boogaloo',cursive;font-size:1.5rem;color:var(--gold);line-height:1}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:4px}
+
+/* Player header */
+.player-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.avatar{width:60px;height:60px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Boogaloo',cursive;font-size:1.5rem;color:var(--gold)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.player-info .name{font-family:'Boogaloo',cursive;font-size:1.4rem;color:#fff}
+.player-info .tag{font-size:12px;color:var(--text2);font-family:monospace}
+.player-info .club{font-size:12px;color:var(--text2);margin-top:3px}
+.player-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Brawlers */
+.brawler-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.brawler-controls select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-family:'Nunito',sans-serif;outline:none}
+.pill-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600;transition:all .15s}
+.pill-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.brawler-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.brawler-card{background:var(--bg3);border-radius:10px;padding:8px;text-align:center;border:1px solid var(--border);transition:border-color .15s,transform .15s;cursor:default}
+.brawler-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.brawler-card img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.brawler-card .bname{font-size:10px;color:var(--text2);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brawler-card .btrophies{font-family:'Boogaloo',cursive;font-size:12px;color:var(--gold)}
+.brawler-card .brank{font-size:9px;color:var(--text3)}
+.power-badge{display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;background:#7c3aed33;color:#a78bfa;margin-top:2px}
+.power-11{background:#FFD70033;color:#FFD700}
+
+/* Leaderboard table */
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.lb-table td{padding:9px 10px;border-bottom:1px solid #1e1040;vertical-align:middle;font-size:13px}
+.lb-table tr:hover td{background:#1e104022}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:22px;border-radius:6px;font-size:12px;font-weight:700}
+.r1{background:#FFD70022;color:#FFD700}
+.r2{background:#c0c0c022;color:#c0c0c0}
+.r3{background:#cd7f3222;color:#cd7f32}
+.rn{background:#4c1d9522;color:#a78bfa}
+.lb-player{display:flex;align-items:center;gap:8px}
+.mini-avatar{width:30px;height:30px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid var(--border);flex-shrink:0}
+.mini-avatar img{width:100%;height:100%;object-fit:cover}
+
+/* Events */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.event-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;transition:border-color .15s}
+.event-card:hover{border-color:var(--accent)}
+.event-mode{font-family:'Boogaloo',cursive;font-size:1.1rem;color:var(--gold)}
+.event-map{font-size:12px;color:var(--text2);margin-top:3px}
+.event-timer{font-size:11px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
+.event-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite}
+.event-dot.upcoming{background:#f59e0b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Club members */
+.member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.member-row:last-child{border-bottom:none}
+.role-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.role-president{background:#FFD70022;color:var(--gold)}
+.role-vicePresident{background:#a78bfa22;color:var(--text2)}
+.role-senior{background:#4ade8022;color:var(--green)}
+.role-member{background:#9ca3af22;color:#9ca3af}
+
+/* Compare */
+.compare-grid{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:stretch}
+.cmp-side{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.cmp-vs{display:flex;align-items:center;justify-content:center;font-family:'Boogaloo',cursive;font-size:1.8rem;color:var(--gold)}
+.cmp-stat{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1e1040;font-size:13px}
+.cmp-stat:last-child{border-bottom:none}
+.cmp-lbl{font-size:11px;color:var(--text3);text-align:center;flex:1}
+.cmp-val{font-weight:700;min-width:80px}
+.cmp-win{color:var(--green)}
+.cmp-lose{color:var(--red)}
+.cmp-draw{color:var(--text2)}
+
+/* Battle log */
+.battle-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.battle-result{font-family:'Boogaloo',cursive;font-size:.95rem;padding:3px 10px;border-radius:8px;white-space:nowrap}
+.br-victory{background:#4ade8022;color:var(--green);border:1px solid #4ade8044}
+.br-defeat{background:#f8717122;color:var(--red);border:1px solid #f8717144}
+.br-draw{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
+.battle-info{flex:1}
+.battle-mode{font-size:13px;font-weight:600;color:var(--text)}
+.battle-map{font-size:11px;color:var(--text3)}
+.battle-time{font-size:10px;color:var(--text3);margin-left:auto}
+
+/* Brawler detail */
+.brawler-detail{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.brawler-big-img{width:90px;height:90px;border-radius:12px;border:2px solid var(--accent)}
+.star-power{background:#7c3aed22;border:1px solid #7c3aed44;border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:12px;color:var(--text2)}
+.gadget{background:#db277722;border:1px solid #db277744;border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:12px;color:#f9a8d4}
+
+/* Notifications / toasts */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--accent);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text);z-index:9999;animation:slideUp .3s ease;max-width:300px}
+.toast.err{border-color:var(--red);color:var(--red)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* Error/loading */
+.loading{text-align:center;padding:30px;color:var(--text3);font-size:14px}
+.loading::after{content:'';display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{background:#7f1d1d22;border:1px solid #f8717144;border-radius:10px;padding:12px 14px;color:var(--red);font-size:13px;margin-bottom:12px}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-220px)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:16px}
+  .compare-grid{grid-template-columns:1fr}
+  .cmp-vs{padding:8px 0}
+}
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--accent);border:none;border-radius:8px;color:#fff;padding:8px 10px;cursor:pointer;font-size:16px}
+@media(max-width:768px){.menu-toggle{display:block}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.avatar[data-init]::after { content: attr(data-init); display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-family:'Boogaloo',cursive; font-size:24px; font-weight:700; color:var(--accent); background:var(--bg3); border-radius:50%; }
+.mini-avatar[data-init]::after { content: attr(data-init); display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:12px; font-weight:700; color:var(--accent); background:var(--bg3); border-radius:50%; }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>⚡ BRAWL</h1>
+    <p>Dashboard API complet</p>
+  </div>
+
+  <nav style="flex:1;overflow-y:auto;padding:8px 0">
+    <div class="nav-section">Joueurs</div>
+    <a class="nav-item active" onclick="go('player',event)"><span class="icon">👤</span> Profil joueur</a>
+    <a class="nav-item" onclick="go('battles',event)"><span class="icon">⚔️</span> Historique</a>
+    <a class="nav-item" onclick="go('compare',event)"><span class="icon">📊</span> Comparer</a>
+
+    <div class="nav-section">Social</div>
+    <a class="nav-item" onclick="go('club',event)"><span class="icon">🏰</span> Club</a>
+    <a class="nav-item" onclick="go('leaderboard',event)"><span class="icon">🏆</span> Classements</a>
+
+    <div class="nav-section">Jeu</div>
+    <a class="nav-item" onclick="go('events',event)"><span class="icon">🗓️</span> Événements</a>
+    <a class="nav-item" onclick="go('brawlers',event)"><span class="icon">🎯</span> Brawlers</a>
+    <a class="nav-item" onclick="go('maps',event)"><span class="icon">🗺️</span> Maps</a>
+  </nav>
+
+
+</aside>
+
+<main class="main">
+
+  <!-- JOUEUR -->
+  <div id="page-player" class="page active">
+    <div class="page-title">👤 Profil Joueur</div>
+    <div class="page-sub">Recherche un joueur par son tag Brawl Stars</div>
+    <div class="search-bar">
+      <input type="text" id="player-tag" placeholder="#EKDDN58 — Entre le tag du joueur" style="font-family:monospace;letter-spacing:1px">
+      <button class="btn" onclick="searchPlayer()">Chercher</button>
+    </div>
+    <div id="player-content"></div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div id="page-battles" class="page">
+    <div class="page-title">⚔️ Historique de combats</div>
+    <div class="page-sub">Les 25 dernières parties d'un joueur</div>
+    <div class="search-bar">
+      <input type="text" id="battle-tag" placeholder="#TAG du joueur" style="font-family:monospace;letter-spacing:1px">
+      <button class="btn" onclick="searchBattles()">Charger</button>
+    </div>
+    <div id="battle-content"></div>
+  </div>
+
+  <!-- COMPARER -->
+  <div id="page-compare" class="page">
+    <div class="page-title">📊 Comparer deux joueurs</div>
+    <div class="page-sub">Comparaison stats côte à côte</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <input type="text" id="cmp1" placeholder="#TAG joueur 1" style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-family:monospace;font-size:13px;outline:none;transition:border-color .2s">
+      <input type="text" id="cmp2" placeholder="#TAG joueur 2" style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-family:monospace;font-size:13px;outline:none;transition:border-color .2s">
+    </div>
+    <button class="btn" style="width:100%;margin-bottom:16px" onclick="comparePlayers()">⚔️ Lancer la comparaison</button>
+    <div id="cmp-content"></div>
+  </div>
+
+  <!-- CLUB -->
+  <div id="page-club" class="page">
+    <div class="page-title">🏰 Club</div>
+    <div class="page-sub">Infos complètes sur un club</div>
+    <div class="search-bar">
+      <input type="text" id="club-tag" placeholder="#TAG du club" style="font-family:monospace;letter-spacing:1px">
+      <button class="btn" onclick="searchClub()">Chercher</button>
+    </div>
+    <div id="club-content"></div>
+  </div>
+
+  <!-- CLASSEMENTS -->
+  <div id="page-leaderboard" class="page">
+    <div class="page-title">🏆 Classements</div>
+    <div class="page-sub">Top joueurs, clubs et brawlers</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+      <select id="lb-type" onchange="updateLbUI()" style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;flex:1;min-width:200px">
+        <option value="players">🏆 Top joueurs (mondial)</option>
+        <option value="clubs">🏰 Top clubs (mondial)</option>
+        <option value="brawler">🎯 Top joueurs par brawler</option>
+        <option value="country-players">🌍 Top joueurs par pays</option>
+        <option value="country-clubs">🌍 Top clubs par pays</option>
+      </select>
+      <input type="text" id="lb-extra" placeholder="Code pays (ex: FR) ou nom brawler" list="brawler-suggestions" style="display:none;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;width:240px">
+      <datalist id="brawler-suggestions"></datalist>
+      <button class="btn" onclick="loadLeaderboard()">Charger</button>
+    </div>
+    <div id="lb-content"></div>
+  </div>
+
+  <!-- EVENEMENTS -->
+  <div id="page-events" class="page">
+    <div class="page-title">🗓️ Événements en cours</div>
+    <div class="page-sub">Rotation des événements — mise à jour en temps réel</div>
+    <button class="btn" style="margin-bottom:16px" onclick="loadEvents()">🔄 Actualiser</button>
+    <div id="events-content"></div>
+  </div>
+
+  <!-- BRAWLERS -->
+  <div id="page-brawlers" class="page">
+    <div class="page-title">🎯 Tous les Brawlers</div>
+    <div class="page-sub">Liste complète des brawlers du jeu</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+      <input type="text" id="br-search" placeholder="Rechercher..." oninput="filterBrawlerList()" style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:8px 12px;font-size:13px;outline:none;flex:1;min-width:150px">
+      <select id="br-sort" onchange="sortBrawlers()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-family:'Nunito',sans-serif;font-size:12px;outline:none">
+        <option value="name">Nom A→Z</option>
+        <option value="id">ID</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="loadBrawlers()">🔄 Charger</button>
+    </div>
+    <div id="brawlers-content"></div>
+  </div>
+
+  <!-- MAPS -->
+  <div id="page-maps" class="page">
+    <div class="page-title">🗺️ Maps & Événements</div>
+    <div class="page-sub">Rotation complète des maps disponibles</div>
+    <button class="btn" style="margin-bottom:16px" onclick="loadMaps()">🔄 Charger</button>
+    <div id="maps-content"></div>
+  </div>
+
+</main>
+
+<script>
+const API = '/api/proxy';
+
+async function api(path) {
+  const r = await fetch(API + '?path=' + encodeURIComponent(path));
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    if (r.status === 404) throw new Error('Introuvable. Vérifie le tag (#XXXXXXXX)');
+    if (r.status === 429) throw new Error('Trop de requêtes — attends quelques secondes');
+    throw new Error(e.reason || 'Erreur ' + r.status);
+  }
+  return r.json();
+}
+
+// Navigation
+function go(page, e) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (e && e.currentTarget) e.currentTarget.classList.add('active');
+  document.querySelector('.sidebar').classList.remove('open');
+}
+
+function nt(tag) { return '%23' + tag.trim().replace(/^#/, '').toUpperCase(); }
+function iurl(id) { return `https://cdn.brawlify.com/profile-icons/regular/${id||28000000}.png`; }
+function burl(id) { return `https://cdn.brawlify.com/brawlers/bordered/${id}.png`; }
+function imgWithFallback(src, alt, cls, fallbackText) {
+  return `<img src="${src}" alt="${alt}" class="${cls}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="${cls}-fb" style="display:none;align-items:center;justify-content:center;background:var(--bg3);border-radius:50%;font-size:14px;font-weight:700;color:var(--accent)">${fallbackText}</span>`;
+}
+
+function toast(msg, err=false) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' err' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function setHTML(id, html) { document.getElementById(id).innerHTML = html; }
+function rankBadge(i) {
+  const cls = i===1?'r1':i===2?'r2':i===3?'r3':'rn';
+  return `<span class="rank-badge ${cls}">${i}</span>`;
+}
+function trophyColor(n) { return n>=8?'var(--green)':n>=5?'var(--gold)':'var(--red)'; }
+
+// ---- PLAYER ----
+document.getElementById('player-tag').addEventListener('keydown', e => { if(e.key==='Enter') searchPlayer(); });
+
+async function searchPlayer() {
+  const tag = document.getElementById('player-tag').value;
+  if (!tag) return;
+  setHTML('player-content', '<div class="loading">Chargement</div>');
+  try {
+    const p = await api('/players/' + nt(tag));
+    renderPlayer(p);
+  } catch(e) { setHTML('player-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+function renderPlayer(p) {
+  const brawlers = (p.brawlers || []).sort((a,b) => b.trophies - a.trophies);
+  const maxPower11 = brawlers.filter(b => b.power >= 11).length;
+  const totalTrophies = brawlers.reduce((s,b) => s+b.trophies, 0);
+
+  let html = `
+  <div class="card">
+    <div class="player-header">
+      <div class="avatar"><img src="${iurl(p.icon?.id)}" onerror="this.style.opacity=0;this.parentNode.setAttribute('data-init','${(p.name||'?')[0]}')" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+      <div class="player-info">
+        <div class="name">${p.name || '?'}</div>
+        <div class="tag">${p.tag || ''}</div>
+        ${p.club?.name ? `<div class="club">🏰 ${p.club.name} <span style="font-family:monospace;font-size:10px;color:var(--text3)">${p.club.tag||''}</span></div>` : '<div class="club" style="color:var(--text3)">Aucun club</div>'}
+      </div>
+      <div class="player-actions">
+        <a href="https://brawltracker.com/stats/player/${(p.tag||'').replace('#','')}" target="_blank" class="btn btn-outline btn-sm">📊 BrawlTracker</a>
+        <button class="btn btn-sm" onclick="prefillBattles('${p.tag||''}')">⚔️ Historique</button>
+        ${p.club?.tag ? `<button class="btn btn-outline btn-sm" onclick="prefillClub('${p.club.tag}')">🏰 Club</button>` : ''}
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">${(p.trophies||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">🏆 Trophées</div></div>
+      <div class="stat-box"><div class="stat-val">${(p.highestTrophies||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">📈 Record</div></div>
+      <div class="stat-box"><div class="stat-val">${p.expLevel||0}</div><div class="stat-lbl">⭐ Niveau</div></div>
+      <div class="stat-box"><div class="stat-val">${brawlers.length}</div><div class="stat-lbl">🎯 Brawlers</div></div>
+      <div class="stat-box"><div class="stat-val">${maxPower11}</div><div class="stat-lbl">💎 Niv.11</div></div>
+      <div class="stat-box"><div class="stat-val">${(p['3vs3Victories']||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">🥊 Victoires 3v3</div></div>
+      <div class="stat-box"><div class="stat-val">${(p.soloVictories||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">🎖️ Solo wins</div></div>
+      <div class="stat-box"><div class="stat-val">${(p.duoVictories||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">👥 Duo wins</div></div>
+      <div class="stat-box"><div class="stat-val">${p.isQualifiedFromChampionshipChallenge?'✅':'❌'}</div><div class="stat-lbl">🏅 Qualifié champ.</div></div>
+      <div class="stat-box"><div class="stat-val">${totalTrophies.toLocaleString('fr-FR')}</div><div class="stat-lbl">🏆 Total brawlers</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎯 Brawlers (${brawlers.length}) <span class="card-subtitle">Trié par trophées</span></div>
+    <div class="brawler-controls">
+      <button class="pill-btn active" onclick="sortPlayerBrawlers('trophies',this)">🏆 Trophées</button>
+      <button class="pill-btn" onclick="sortPlayerBrawlers('rank',this)">🏅 Rang</button>
+      <button class="pill-btn" onclick="sortPlayerBrawlers('power',this)">⚡ Niveau</button>
+      <button class="pill-btn" onclick="sortPlayerBrawlers('name',this)">🔤 Nom</button>
+    </div>
+    <div class="brawler-grid" id="p-brawlers">
+      ${brawlers.map(b => `
+      <div class="brawler-card" data-trophies="${b.trophies}" data-rank="${b.rank||0}" data-power="${b.power}" data-name="${b.name}">
+        <img src="${burl(b.id)}" onerror="this.style.opacity=0" loading="lazy" style="width:44px;height:44px;border-radius:8px;object-fit:cover">
+        <div class="bname">${b.name}</div>
+        <div class="btrophies">🏆 ${b.trophies}</div>
+        <div class="brank">Niv.${b.power} · Rang ${b.rank||0}</div>
+        <span class="power-badge ${b.power>=11?'power-11':''}">P${b.power}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  setHTML('player-content', html);
+}
+
+function sortPlayerBrawlers(by, btn) {
+  document.querySelectorAll('.brawler-controls .pill-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid = document.getElementById('p-brawlers');
+  const cards = [...grid.querySelectorAll('.brawler-card')];
+  cards.sort((a,b) => {
+    if (by === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+    return parseInt(b.dataset[by]) - parseInt(a.dataset[by]);
+  });
+  cards.forEach(c => grid.appendChild(c));
+}
+
+function prefillBattles(tag) {
+  document.getElementById('battle-tag').value = tag;
+  // Navigation directe sans passer par .click()
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-battles').classList.add('active');
+  document.querySelector('[onclick="go(\'battles\',event)"]').classList.add('active');
+  searchBattles();
+}
+function prefillClub(tag) {
+  document.getElementById('club-tag').value = tag;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-club').classList.add('active');
+  document.querySelector('[onclick="go(\'club\',event)"]').classList.add('active');
+  searchClub();
+}
+
+// ---- BATTLES ----
+document.getElementById('battle-tag').addEventListener('keydown', e => { if(e.key==='Enter') searchBattles(); });
+
+async function searchBattles() {
+  const tag = document.getElementById('battle-tag').value;
+  if (!tag) return;
+  setHTML('battle-content', '<div class="loading">Chargement</div>');
+  try {
+    const data = await api('/players/' + nt(tag) + '/battlelog');
+    const battles = data.items || [];
+    if (!battles.length) { setHTML('battle-content', '<div class="error-box">Aucun combat trouvé.</div>'); return; }
+
+    let wins=0, losses=0, draws=0;
+    battles.forEach(b => {
+      const r = b.battle?.result;
+      if(r==='victory') wins++;
+      else if(r==='defeat') losses++;
+      else draws++;
+    });
+    const total = battles.length;
+
+    let html = `
+    <div class="card">
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-box"><div class="stat-val" style="color:var(--green)">${wins}</div><div class="stat-lbl">✅ Victoires</div></div>
+        <div class="stat-box"><div class="stat-val" style="color:var(--red)">${losses}</div><div class="stat-lbl">❌ Défaites</div></div>
+        <div class="stat-box"><div class="stat-val" style="color:#f59e0b">${draws}</div><div class="stat-lbl">🤝 Nuls</div></div>
+        <div class="stat-box"><div class="stat-val">${total>0?Math.round(wins/total*100):0}%</div><div class="stat-lbl">📈 Winrate</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚔️ ${total} dernières parties</div>`;
+
+    battles.forEach(b => {
+      const result = b.battle?.result || 'draw';
+      const cls = result==='victory'?'br-victory':result==='defeat'?'br-defeat':'br-draw';
+      const label = result==='victory'?'Victoire':result==='defeat'?'Défaite':'Nul';
+      const mode = b.event?.mode || '?';
+      const map = b.event?.map || '?';
+      const time = b.battleTime ? new Date(
+        b.battleTime.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\.000Z/, '$1-$2-$3T$4:$5:$6Z')
+      ).toLocaleString('fr-FR') : '?';
+      const brawler = b.battle?.teams?.flat()?.find(p => p?.tag === ('#'+tag.replace('#','')))?.brawler;
+      const trophyChange = b.battle?.trophyChange;
+
+      html += `<div class="battle-card">
+        <span class="battle-result ${cls}">${label}</span>
+        <div class="battle-info">
+          <div class="battle-mode">${mode}${brawler?` · <span style="color:var(--text2)">${brawler.name}</span>`:''}</div>
+          <div class="battle-map">🗺️ ${map}${trophyChange!==undefined?` · <span style="color:${trophyChange>=0?'var(--green)':'var(--red)'}">${trophyChange>=0?'+':''}${trophyChange} 🏆</span>`:''}</div>
+        </div>
+        <div class="battle-time">${time}</div>
+      </div>`;
+    });
+
+    html += '</div>';
+    setHTML('battle-content', html);
+  } catch(e) { setHTML('battle-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+// ---- COMPARE ----
+async function comparePlayers() {
+  const t1 = document.getElementById('cmp1').value;
+  const t2 = document.getElementById('cmp2').value;
+  if (!t1 || !t2) { toast('Entre les deux tags !', true); return; }
+  setHTML('cmp-content', '<div class="loading">Chargement des deux profils</div>');
+  try {
+    const [p1, p2] = await Promise.all([api('/players/'+nt(t1)), api('/players/'+nt(t2))]);
+    const stats = [
+      { lbl:'🏆 Trophées', fn: p => p.trophies||0 },
+      { lbl:'📈 Record trophées', fn: p => p.highestTrophies||0 },
+      { lbl:'⭐ Niveau', fn: p => p.expLevel||0 },
+      { lbl:'🎯 Brawlers', fn: p => (p.brawlers||[]).length },
+      { lbl:'💎 Brawlers niv.11', fn: p => (p.brawlers||[]).filter(b=>b.power>=11).length },
+      { lbl:'🥊 Victoires 3v3', fn: p => p['3vs3Victories']||0 },
+      { lbl:'🎖️ Victoires solo', fn: p => p.soloVictories||0 },
+      { lbl:'👥 Victoires duo', fn: p => p.duoVictories||0 },
+    ];
+
+    let scoreP1=0, scoreP2=0;
+    stats.forEach(s => {
+      const v1=s.fn(p1), v2=s.fn(p2);
+      if(v1>v2) scoreP1++;
+      else if(v2>v1) scoreP2++;
+    });
+
+    let html = `
+    <div class="compare-grid" style="margin-bottom:14px">
+      <div class="cmp-side" style="text-align:center">
+        <div class="avatar" style="margin:0 auto 8px"><img src="${iurl(p1.icon?.id)}" onerror="this.style.opacity=0;this.parentNode.setAttribute('data-init','${(p1.name||'?')[0]}')" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1.2rem">${p1.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:monospace">${p1.tag}</div>
+        ${scoreP1>scoreP2?'<div style="color:var(--green);font-size:12px;margin-top:6px">🏆 Gagnant</div>':''}
+      </div>
+      <div class="cmp-vs">VS</div>
+      <div class="cmp-side" style="text-align:center">
+        <div class="avatar" style="margin:0 auto 8px"><img src="${iurl(p2.icon?.id)}" onerror="this.style.opacity=0;this.parentNode.setAttribute('data-init','${(p2.name||'?')[0]}')" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1.2rem">${p2.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:monospace">${p2.tag}</div>
+        ${scoreP2>scoreP1?'<div style="color:var(--green);font-size:12px;margin-top:6px">🏆 Gagnant</div>':''}
+      </div>
+    </div>
+    <div class="card">
+      ${stats.map(s => {
+        const v1=s.fn(p1), v2=s.fn(p2);
+        const w1=v1>v2, w2=v2>v1;
+        return `<div class="cmp-stat">
+          <span class="cmp-val ${w1?'cmp-win':w2?'cmp-lose':'cmp-draw'}">${v1.toLocaleString('fr-FR')}</span>
+          <span class="cmp-lbl">${s.lbl}</span>
+          <span class="cmp-val ${w2?'cmp-win':w1?'cmp-lose':'cmp-draw'}" style="text-align:right">${v2.toLocaleString('fr-FR')}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+    setHTML('cmp-content', html);
+  } catch(e) { setHTML('cmp-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+// ---- CLUB ----
+document.getElementById('club-tag').addEventListener('keydown', e => { if(e.key==='Enter') searchClub(); });
+
+async function searchClub() {
+  const tag = document.getElementById('club-tag').value;
+  if (!tag) return;
+  setHTML('club-content', '<div class="loading">Chargement</div>');
+  try {
+    const c = await api('/clubs/' + nt(tag));
+    const members = (c.members||[]).sort((a,b) => b.trophies - a.trophies);
+    const roleCls = { president:'role-president', vicePresident:'role-vicePresident', senior:'role-senior', member:'role-member' };
+
+    let html = `
+    <div class="card">
+      <div style="font-family:'Boogaloo',cursive;font-size:1.5rem;color:var(--gold);margin-bottom:4px">${c.name||'?'}</div>
+      <div style="font-size:12px;color:var(--text3);font-family:monospace;margin-bottom:8px">${c.tag||''}</div>
+      ${c.description?`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">${c.description}</div>`:''}
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val">${(c.trophies||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">🏆 Trophées</div></div>
+        <div class="stat-box"><div class="stat-val">${(c.requiredTrophies||0).toLocaleString('fr-FR')}</div><div class="stat-lbl">📋 Trophées requis</div></div>
+        <div class="stat-box"><div class="stat-val">${members.length}/30</div><div class="stat-lbl">👥 Membres</div></div>
+        <div class="stat-box"><div class="stat-val">${c.type||'?'}</div><div class="stat-lbl">🔒 Type</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">👥 Membres (${members.length})</div>
+      ${members.map((m,i) => `
+      <div class="member-row">
+        <div style="font-size:13px;color:var(--text3);min-width:20px">${i+1}</div>
+        <div class="mini-avatar"><img src="${iurl(m.icon?.id)}" onerror="this.style.opacity=0;this.parentNode.setAttribute('data-init','${(m.name||'?')[0]}')" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${m.name||'?'}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:monospace">${m.tag||''}</div>
+        </div>
+        <span class="role-badge ${roleCls[m.role]||'role-member'}">${m.role||'member'}</span>
+        <div style="font-family:'Boogaloo',cursive;color:var(--gold);font-size:14px;min-width:80px;text-align:right">🏆 ${(m.trophies||0).toLocaleString('fr-FR')}</div>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('player-tag').value='${m.tag||''}';document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-player').classList.add('active');searchPlayer()">Voir</button>
+      </div>`).join('')}
+    </div>`;
+    setHTML('club-content', html);
+  } catch(e) { setHTML('club-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+// ---- LEADERBOARD ----
+function updateLbUI() {
+  const type = document.getElementById('lb-type').value;
+  const extra = document.getElementById('lb-extra');
+  if (type === 'brawler') {
+    extra.style.display='block';
+    extra.placeholder='Nom du brawler (ex: Edgar)';
+    extra.value='';
+    // Populate datalist with brawler names (load if needed)
+    const dl = document.getElementById('brawler-suggestions');
+    if (allBrawlers.length === 0) {
+      api('/brawlers').then(data => {
+        allBrawlers = (data.items||[]).sort((a,b) => a.name.localeCompare(b.name));
+        dl.innerHTML = allBrawlers.map(b => `<option value="${b.name}">`).join('');
+      }).catch(()=>{});
+    } else {
+      dl.innerHTML = allBrawlers.map(b => `<option value="${b.name}">`).join('');
+    }
+  }
+  else if (type.startsWith('country')) { extra.style.display='block'; extra.placeholder='Code pays (ex: FR, US, GB...)'; }
+  else { extra.style.display='none'; }
+}
+
+async function loadLeaderboard() {
+  const type = document.getElementById('lb-type').value;
+  const extra = document.getElementById('lb-extra').value.trim();
+  setHTML('lb-content', '<div class="loading">Chargement du classement</div>');
+  try {
+    let data, title='';
+    if (type==='players') { data=await api('/rankings/global/players'); title='🏆 Top joueurs mondial'; }
+    else if (type==='clubs') { data=await api('/rankings/global/clubs'); title='🏰 Top clubs mondial'; }
+    else if (type==='brawler') {
+      let bid = '16000000';
+      const input = extra.trim();
+      if (input) {
+        // Try to match by name first, fallback to treating as raw ID
+        const match = allBrawlers.find(b => b.name.toLowerCase() === input.toLowerCase());
+        if (match) {
+          bid = match.id;
+          title = `🎯 Top joueurs — ${match.name}`;
+        } else if (/^\d+$/.test(input)) {
+          bid = input;
+          title = `🎯 Top joueurs — Brawler #${bid}`;
+        } else {
+          // Partial match
+          const partial = allBrawlers.find(b => b.name.toLowerCase().includes(input.toLowerCase()));
+          if (partial) { bid = partial.id; title = `🎯 Top joueurs — ${partial.name}`; }
+          else { title = `🎯 Top joueurs — Brawler #${bid}`; }
+        }
+      } else {
+        title = `🎯 Top joueurs — Brawler #${bid}`;
+      }
+      data = await api(`/rankings/global/brawlers/${bid}`);
+    }
+    else if (type==='country-players') { const cc=extra||'FR'; data=await api(`/rankings/${cc}/players`); title=`🌍 Top joueurs — ${cc.toUpperCase()}`; }
+    else if (type==='country-clubs') { const cc=extra||'FR'; data=await api(`/rankings/${cc}/clubs`); title=`🌍 Top clubs — ${cc.toUpperCase()}`; }
+
+    const items = data?.items || [];
+    const isClub = type==='clubs'||type==='country-clubs';
+
+    let html = `<div class="card">
+      <div class="card-title">${title} <span class="card-subtitle">${items.length} résultats</span></div>
+      <table class="lb-table">
+        <thead><tr>
+          <th style="width:40px">#</th>
+          <th>${isClub?'Club':'Joueur'}</th>
+          <th>🏆 Trophées</th>
+          ${!isClub?'<th>Club</th>':'<th>Membres</th>'}
+        </tr></thead>
+        <tbody>
+          ${items.map((item,i) => `<tr>
+            <td>${rankBadge(i+1)}</td>
+            <td><div class="lb-player">
+              <div class="mini-avatar"><img src="${iurl(item.icon?.id)}" onerror="this.style.opacity=0;this.parentNode.setAttribute('data-init','${(item.name||'?')[0]}')" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+              <span>${item.name||'?'}</span>
+            </div></td>
+            <td style="font-family:'Boogaloo',cursive;color:var(--gold)">${(item.trophies||0).toLocaleString('fr-FR')}</td>
+            <td style="font-size:12px;color:var(--text3)">${isClub?(item.memberCount||'?')+' membres':(item.club?.name||'—')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+    setHTML('lb-content', html);
+  } catch(e) { setHTML('lb-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+// ---- EVENTS ----
+async function loadEvents() {
+  setHTML('events-content', '<div class="loading">Chargement</div>');
+  try {
+    const data = await api('/events/rotation');
+    const now = Date.now();
+    function fmtTime(ms) {
+      const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000);
+      return `${h}h ${m}min`;
+    }
+    function evCard(ev, active) {
+      const map = ev.map || {};
+      const mode = map.gameMode?.name || ev.slot?.name || '?';
+      const mapName = map.name || '?';
+      const mapImg = map.imageUrl || '';
+      const modeImg = map.gameMode?.imageUrl || '';
+      const modeColor = map.gameMode?.color || 'var(--accent)';
+      const diff = active
+        ? Math.max(0, new Date(ev.endTime) - now)
+        : Math.max(0, new Date(ev.startTime) - now);
+      return `<div class="event-card" style="overflow:hidden">
+        ${mapImg ? `<img src="${mapImg}" onerror="this.style.display='none'" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px" loading="lazy">` : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${modeImg ? `<img src="${modeImg}" onerror="this.style.display='none'" style="width:20px;height:20px;object-fit:contain" loading="lazy">` : ''}
+          <div class="event-mode" style="color:${modeColor}">${mode}</div>
+        </div>
+        <div class="event-map">🗺️ ${mapName}</div>
+        <div class="event-timer"><span class="event-dot ${active ? '' : 'upcoming'}"></span>${active ? 'Fin dans' : 'Dans'} ${fmtTime(diff)}</div>
+      </div>`;
+    }
+    let html = '';
+    if ((data.active||[]).length) {
+      html += `<div class="card"><div class="card-title">🟢 Événements actifs (${data.active.length})</div><div class="events-grid">`;
+      data.active.forEach(ev => { html += evCard(ev, true); });
+      html += '</div></div>';
+    }
+    if ((data.upcoming||[]).length) {
+      html += `<div class="card"><div class="card-title">🔜 Prochains événements (${data.upcoming.length})</div><div class="events-grid">`;
+      data.upcoming.forEach(ev => { html += evCard(ev, false); });
+      html += '</div></div>';
+    }
+    if (!html) html = '<div class="error-box">Aucun événement trouvé.</div>';
+    setHTML('events-content', html);
+  } catch(e) { setHTML('events-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+
+// ---- MAPS ----
+async function loadMaps() {
+  setHTML('maps-content', '<div class="loading">Chargement</div>');
+  try {
+    const data = await api('/events/rotation');
+    const all = [...(data.active||[]), ...(data.upcoming||[])];
+    const byMode = {};
+    all.forEach(ev => {
+      const mode = ev.map?.gameMode?.name || ev.slot?.name || 'Inconnu';
+      if (!byMode[mode]) byMode[mode] = [];
+      byMode[mode].push(ev);
+    });
+    let html = '';
+    Object.entries(byMode).forEach(([mode, evs]) => {
+      const modeImg = evs[0]?.map?.gameMode?.imageUrl || '';
+      const modeColor = evs[0]?.map?.gameMode?.color || 'var(--accent)';
+      html += `<div class="card">
+        <div class="card-title" style="color:${modeColor}">
+          ${modeImg ? `<img src="${modeImg}" onerror="this.style.display='none'" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px" loading="lazy">` : '🎮 '}${mode}
+        </div>
+        <div class="events-grid">
+          ${evs.map(ev => {
+            const active = (data.active||[]).includes(ev);
+            const mapImg = ev.map?.imageUrl || '';
+            const mapName = ev.map?.name || '?';
+            return `<div class="event-card" style="overflow:hidden">
+              ${mapImg ? `<img src="${mapImg}" onerror="this.style.display='none'" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px" loading="lazy">` : ''}
+              <div class="event-map" style="font-size:13px;font-weight:600;color:var(--text)">🗺️ ${mapName}</div>
+              <div class="event-timer"><span class="event-dot ${active?'':'upcoming'}"></span>${active ? '🟢 En cours' : '🔜 À venir'}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
+    if (!html) html = '<div class="error-box">Aucune map trouvée.</div>';
+    setHTML('maps-content', html);
+  } catch(e) { setHTML('maps-content', `<div class="error-box">❌ ${e.message}</div>`); }
+}
+</script>
+</body>
+</html>
